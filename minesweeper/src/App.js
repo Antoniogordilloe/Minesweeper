@@ -1,167 +1,238 @@
-import './App.css';
-import { useState } from 'react';
-import smiley from './smiley.png';
-import sadSmiley from './sadSmiley.png';
+import './App.css'
+import { useState } from 'react'
+import smiley from './smiley.png'
+import sadSmiley from './sadSmiley.png'
 
-const numRows = 10;
-const numCols = 10;
-const TOTAL_BOMBS = 10;
+const numberOfRows = 10
+const numberOfColumns = 10
+const TOTAL_MINES = 10
 
-function selectAllBombs(board) {
+function selectAllMines (board) {
   const updatedBoard = board.map(row =>
     row.map(cell =>
-      cell.hasBomb ? { ...cell, isSelected: true } : cell
+      cell.hasMine ? { ...cell, isSelected: true } : cell
     )
-  );
+  )
 
-  return updatedBoard;
+  return updatedBoard
 }
 
-const Square = ({ isSelected, minesAround, hasBomb, updateBoard, row, col ,setGameOver,gameOver, setSmileyMood}) => {
+const Square = ({ isSelected, minesAround, hasMine, selectSquare, row, column, setGameOver, gameOver, setSmileyMood, flag, addFlag, setFlagsLeft, flagsLeft }) => {
+  let cellDisplay = ''
+
   const className = `square ${isSelected ? 'is-selected' : ''} 
-  ${hasBomb && isSelected ? 'has-bomb' : ''}`
-
-
-  let cellDisplay = '';
+  ${hasMine && isSelected ? 'has-mine' : ''}`
 
   if (isSelected) {
-    cellDisplay = minesAround;
-    if (hasBomb) {
-      cellDisplay = '*';
-    }
+    cellDisplay = minesAround
+    if (hasMine) {
+      cellDisplay = '*'
+    } else if (minesAround === 0) { cellDisplay = ' ' }
+  } else {
+    cellDisplay = flag
   }
 
-  const handleClick = () => {
-    if(!gameOver){
-    updateBoard(row, col);
-    if (hasBomb) {
-      setGameOver(true);
-      setSmileyMood(sadSmiley)
-    }
-  }
-  };
-
-  return (
-    <div onClick={handleClick} className={className}>
-      {cellDisplay}
-    </div>
-  );
-};
-
-function createEmptyBoard() {
-  const board = Array(numRows).fill(null).map(() => Array(numCols).fill({
-    isSelected: false,
-    minesAround: 0,
-    hasBomb: false,
-    flag: ''
-  }));
-  return board;
-}
-
-function addRandomBombs(board, TOTAL_BOMBS) {
-  const boardWithBombs = board.map(row => row.map(cell => ({ ...cell })));
-  let bombsLeft = TOTAL_BOMBS;
-
-  while (bombsLeft > 0) {
-    const randomRow = Math.floor(Math.random() * numRows);
-    const randomCol = Math.floor(Math.random() * numCols);
-
-    if (!boardWithBombs[randomRow][randomCol].hasBomb) {
-      boardWithBombs[randomRow][randomCol].hasBomb = true;
-      bombsLeft--;
-    }
-  }
-
-  return boardWithBombs;
-}
-
-function addMinesAround(board) {
-  const numRows = board.length;
-  const numCols = board[0].length;
-
-  for (let row = 0; row < numRows; row++) {
-    for (let col = 0; col < numCols; col++) {
-      if (!board[row][col].hasBomb) {
-        let minesCount = 0;
-
-        for (let i = -1; i <= 1; i++) {
-          for (let j = -1; j <= 1; j++) {
-            const newRow = row + i;
-            const newCol = col + j;
-
-            if (
-              newRow >= 0 &&
-              newRow < numRows &&
-              newCol >= 0 &&
-              newCol < numCols &&
-              board[newRow][newCol].hasBomb
-            ) {
-              minesCount++;
-            }
-          }
-        }
-
-        board[row][col].minesAround = minesCount;
+  const handleLeftClick = () => {
+    if (!gameOver && !isSelected) {
+      selectSquare(row, column)
+      if (flag === '!') {
+        setFlagsLeft(flagsLeft + 1)
+      }
+      if (hasMine) {
+        setGameOver(true)
+        setSmileyMood(sadSmiley)
       }
     }
   }
 
-  return board;
+  const handleRightClick = (event) => {
+    if (!gameOver) {
+      addFlag(row, column)
+    }
+    event.preventDefault()
+  }
+
+  return (
+    <div onContextMenu={handleRightClick} onClick={handleLeftClick} className={className}>
+      {cellDisplay}
+    </div>
+  )
 }
 
-function App() {
+function createEmptyBoard () {
+  const board = Array(numberOfRows).fill(null).map(() => Array(numberOfColumns).fill({
+    isSelected: false,
+    minesAround: 0,
+    hasMine: false,
+    flag: ''
+  }))
+  return board
+}
 
-  const [smileyMood,setSmileyMood] = useState((smiley))
+function addRandomMines (board, TOTAL_MINES) {
+  const boardWithMines = board.map(row => row.map(cell => ({ ...cell })))
+  let minesLeft = TOTAL_MINES
+
+  while (minesLeft > 0) {
+    const randomRow = Math.floor(Math.random() * numberOfRows)
+    const randomcolumn = Math.floor(Math.random() * numberOfColumns)
+
+    if (!boardWithMines[randomRow][randomcolumn].hasMine) {
+      boardWithMines[randomRow][randomcolumn].hasMine = true
+      minesLeft--
+    }
+  }
+
+  return boardWithMines
+}
+
+function addMinesAroundCounter (board) {
+  const numberOfRows = board.length
+  const numberOfcolumnumns = board[0].length
+
+  for (let row = 0; row < numberOfRows; row++) {
+    for (let column = 0; column < numberOfcolumnumns; column++) {
+      if (!board[row][column].hasMine) {
+        let minesCount = 0
+
+        for (let i = -1; i <= 1; i++) {
+          for (let j = -1; j <= 1; j++) {
+            const newRow = row + i
+            const newcolumn = column + j
+            // Limites
+            if (
+              newRow >= 0 &&
+              newRow < numberOfRows &&
+              newcolumn >= 0 &&
+              newcolumn < numberOfcolumnumns &&
+              board[newRow][newcolumn].hasMine
+            ) {
+              minesCount++
+            }
+          }
+        }
+
+        board[row][column].minesAround = minesCount
+      }
+    }
+  }
+
+  return board
+}
+
+function App () {
+  const [smileyMood, setSmileyMood] = useState((smiley))
   const [gameOver, setGameOver] = useState((false))
+  const [flagsLeft, setFlagsLeft] = useState((10))
 
   const [board, setBoard] = useState(() => {
-    let initialBoard = createEmptyBoard();
-    const boardWithBombs = addRandomBombs(initialBoard, TOTAL_BOMBS);
-    const boardwithBombsAround = addMinesAround(boardWithBombs)
-    return boardwithBombsAround;
-  });
+    const initialBoard = createEmptyBoard()
+    const boardWithMines = addRandomMines(initialBoard, TOTAL_MINES)
+    const boardwithMinesAround = addMinesAroundCounter(boardWithMines)
+    return boardwithMinesAround
+  })
 
-  const updateBoard = (row, col) => {
-    const newBoard = board.map((rowArr, rowIndex) =>
-      rowArr.map((square, colIndex) =>
-        rowIndex === row && colIndex === col
-          ? { ...square, isSelected: true }
-          : square
-      )
-    );
-    setBoard(newBoard);
+  function newGame () {
+    const initialBoard = createEmptyBoard()
+    const boardWithMines = addRandomMines(initialBoard, TOTAL_MINES)
+    const boardwithMinesAround = addMinesAroundCounter(boardWithMines)
+    setSmileyMood(smiley)
+    setGameOver(false)
+    setBoard(boardwithMinesAround)
+    setFlagsLeft(10)
+  }
 
-    if (board[row][col].hasBomb) {
-      setBoard(selectAllBombs(newBoard));
+  const selectSquare = (row, column) => {
+    const updatedBoard = [...board]
+
+    if (updatedBoard[row][column].hasMine) {
+      setBoard(selectAllMines(updatedBoard))
       setGameOver(true)
-
+    } else {
+      if (updatedBoard[row][column].minesAround === 0) {
+        selectAdjacentSquares(row, column, updatedBoard)
+      } else {
+        updatedBoard[row][column].isSelected = true
+      }
+      setBoard(updatedBoard)
     }
-  };
+  }
+
+  const addFlag = (row, column) => {
+    const updatedBoard = [...board]
+    const currentFlag = updatedBoard[row][column].flag
+    let newFlag = ''
+
+    if (currentFlag === '') {
+      newFlag = '!'
+      setFlagsLeft(flagsLeft - 1)
+    } else if (currentFlag === '!') {
+      newFlag = '?'
+      setFlagsLeft(flagsLeft + 1)
+    } else if (currentFlag === '?') {
+      newFlag = ''
+    }
+
+    updatedBoard[row][column].flag = newFlag
+    setBoard(updatedBoard)
+  }
+
+  function selectAdjacentSquares (row, column, board) {
+    const directions = [
+      { row: -1, column: 0 }, // Arriba
+      { row: 1, column: 0 }, // Abajo
+      { row: 0, column: -1 }, // Izquierda
+      { row: 0, column: 1 } // Derecha
+    ]
+    directions.forEach((direction) => {
+      const newRow = row + direction.row
+      const newColumn = column + direction.column
+      if (
+        newRow >= 0 &&
+        newRow < numberOfRows &&
+        newColumn >= 0 &&
+        newColumn < numberOfColumns &&
+        !board[newRow][newColumn].isSelected &&
+        !board[newRow][newColumn].hasMine
+      ) {
+        board[newRow][newColumn].isSelected = true
+
+        if (board[newRow][newColumn].minesAround === 0) {
+          selectAdjacentSquares(newRow, newColumn, board)
+        }
+      }
+    })
+  }
 
   return (
     <main className='board'>
       <h1>Buscaminas</h1>
-      <img src={smileyMood} alt='Smiley' />
+      <p>Flags:{flagsLeft}</p>
+      <div className='smiley' onClick={() => newGame()}><img src={smileyMood} alt='Smiley' /></div>
       <section className='game'>
-        {board.map((rowArr, rowIndex) => {
-          return rowArr.map((square, colIndex) => (
+        {board.map((rowArray, row) => {
+          return rowArray.map((square, column) => (
             <Square
-              key={`${rowIndex}-${colIndex}`}
-              row={rowIndex}
-              col={colIndex}
+              key={`${row}-${column}`}
+              row={row}
+              column={column}
               isSelected={square.isSelected}
               minesAround={square.minesAround}
-              hasBomb={square.hasBomb}
-              updateBoard={updateBoard}
+              hasMine={square.hasMine}
+              flag={square.flag}
+              selectSquare={selectSquare}
               setGameOver={setGameOver}
               gameOver={gameOver}
               setSmileyMood={setSmileyMood}
+              addFlag={addFlag}
+              setFlagsLeft={setFlagsLeft}
+              flagsLeft={flagsLeft}
             />
-          ));
+          ))
         })}
       </section>
     </main>
-  );
+  )
 }
 
-export default App;
+export default App
