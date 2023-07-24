@@ -1,8 +1,7 @@
+import React from 'react'
 import './App.css'
 import { useState } from 'react'
-import smiley from './smiley.png'
-import happySmiley from './happySmiley.png'
-import sadSmiley from './sadSmiley.png'
+
 import Square from './components/Square'
 import Smiley from './components/Smiley'
 import FlagsCounter from './components/FlagsCounter'
@@ -12,13 +11,13 @@ import Difficulty from './components/Difficulty'
 let numberOfColumns = 10
 let numberOfRows = 10
 let TOTAL_MINES = 10
-
+let smileyMoodProp = 'smiley'
 
 function App() {
 
   const [gameHasStarted, setGameHasStarted] = useState(false)
   const [timePassed, setTimePassed] = useState(0)
-  const [smileyMood, setSmileyMood] = useState((smiley))
+ 
   const [gameOver, setGameOver] = useState((false))
   const [flagsLeft, setFlagsLeft] = useState((10))
   const [board, setBoard] = useState(() => {
@@ -128,7 +127,7 @@ function App() {
     const boardwithMinesAround = addCounterOfMinesAround(boardWithMines)
     setBoard(boardwithMinesAround)
 
-    setSmileyMood(smiley)
+    smileyMoodProp = 'neutral'
     setGameOver(false)
     setFlagsLeft(TOTAL_MINES)
     setTimePassed(0)
@@ -210,7 +209,7 @@ function App() {
       }
       if (square.hasMine) {
         setGameOver(true)
-        setSmileyMood(sadSmiley)
+        smileyMoodProp = 'sad'
       }
     }
     checkWin()
@@ -272,7 +271,7 @@ function App() {
     if (allNonMineSelected) {
       setBoard(flagAllMines(updatedBoard))
       setGameOver(true)
-      setSmileyMood(happySmiley)
+      smileyMoodProp = 'happy'
     }
   }
 
@@ -305,7 +304,10 @@ function App() {
     return updatedBoard
   }
 
+
+
   return (
+    <>
     <center>
     <div className='container'>
       <h1 className='window'>Minesweeper</h1>
@@ -317,11 +319,15 @@ function App() {
     
 
         <div className='window'>
-      <Smiley
+       
+
+ <Smiley
           newGame={newGame}
-          smileyMood={smileyMood}
-          setSmileyMood={setSmileyMood}
+          smileyMoodProp={smileyMoodProp}
         />
+
+       
+     
       </div> 
 
         <div className='window-stats'>
@@ -354,9 +360,12 @@ function App() {
       </main>
       <Difficulty
         setGameDifficulty={setGameDifficulty}
-      /> 
-    </div>
-     · Antonio Gordillo 2023 ·</center>
+      />  
+      · Antonio Gordillo 2023 ·
+      </div>
+      </center>
+      </>
+    
   )
 }
 

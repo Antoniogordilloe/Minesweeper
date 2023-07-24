@@ -1,0 +1,77 @@
+
+.square.is-selected {
+  background-image: url("uncovered.png");
+}
+
+.square.is-selected.has-mine {
+  animation: bounce 0.5s infinite;
+  background-image: none ;
+  background-color: rgb(255, 2, 2);
+
+}
+
+.square {
+  background-image: url("covered.png");
+  background-color: rgb(206, 201, 201);
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: bold;
+  user-select: none;
+}
+
+
+.square:hover {
+  cursor: pointer;
+  box-shadow: inset 0 0 10px rgb(217, 255, 0); /* Brillo interno en blanco en el hover (ajusta el tamaño según sea necesario) */
+}
+
+.smiley {
+  width: 60px;
+  height: 60px;
+  margin-top: 10px;
+  border-radius: 50%; /* Hace que el elemento sea un círculo */
+  transition: box-shadow 0.3s ease-in-out; /* Agrega una transición suave al efecto de iluminación */
+}
+
+.smiley:hover {
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(255, 255, 0, 0.7); /* Iluminación en el hover (ajusta el color y el tamaño según sea necesario) */
+}
+
+
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+/* Estilos para el reloj digital */
+.time-counter {
+  font-family: 'Arial', sans-serif;
+  font-size: 2rem;
+  background-color: #333;
+  color: #fff;
+  padding: 10px;
+  border-radius: 5px;
+  display: inline-block;
+}
+
+/* Estilos para los dígitos del reloj */
+.time-counter span {
+  display: inline-block;
+  width: 2rem;
+  text-align: center;
+}
+
+
+
+
