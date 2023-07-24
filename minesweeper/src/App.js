@@ -46,7 +46,7 @@ const Square = ({ isSelected, minesAround, hasMine, selectSquare, row, column, s
   }
 
   const handleRightClick = (event) => {
-    if (!gameOver) {
+    if (!gameOver && !isSelected) {
       addFlag(row, column)
     }
     event.preventDefault()
