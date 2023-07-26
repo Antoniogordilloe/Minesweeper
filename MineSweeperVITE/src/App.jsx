@@ -17,7 +17,7 @@ function App() {
 
   const [gameHasStarted, setGameHasStarted] = useState(false)
   const [timePassed, setTimePassed] = useState(0)
- 
+
   const [gameOver, setGameOver] = useState((false))
   const [flagsLeft, setFlagsLeft] = useState((10))
   const [board, setBoard] = useState(() => {
@@ -99,7 +99,7 @@ function App() {
       let minesCount = 0
       for (let i = -1; i <= 1; i++) {
         for (let j = -1; j <= 1; j++) {
-          if (i === 0 && j === 0) continue 
+          if (i === 0 && j === 0) continue
           const newRow = row + i
           const newCol = col + j
           if (isValidsquare(newRow, newCol) && board[newRow][newCol].hasMine) {
@@ -145,11 +145,10 @@ function App() {
       setGameOver(true)
       markAllWrongFlags(board)
     } else {
+      updatedBoard[row][column].isSelected = true
       if (updatedBoard[row][column].minesAround === 0) {
         selectAdjacentSquares(row, column, updatedBoard)
-      } else {
-        updatedBoard[row][column].isSelected = true
-      }
+      } 
       setBoard(updatedBoard)
     }
   }
@@ -177,9 +176,10 @@ function App() {
     const square = board[row][column]
 
     let squareDisplay = ''
+    squareDisplay = square.minesAround
 
     if (square.isSelected) {
-      squareDisplay = square.minesAround
+      
       if (square.hasMine) {
         squareDisplay = '💣'
       } else if (square.minesAround === 0) { squareDisplay = ' ' }
@@ -304,44 +304,98 @@ function App() {
     return updatedBoard
   }
 
+  const initializeGameBoard = () => {
+    
+    smileyMoodProp = 'neutral'
+    setGameOver(false)
+    setFlagsLeft(TOTAL_MINES)
+    setTimePassed(0)
+    setGameHasStarted(false)
+
+    const input = document.getElementById('mockInput').value;
+  
+    const rows = input.split('-');
+    const numRows = rows.length;
+    const numCols = Math.max(...rows.map(row => row.length));
+  
+    let mockBoard = Array.from({ length: numRows }, (_, rowIndex) =>
+      Array.from({ length: numCols }, (_, colIndex) => {
+        const cellValue = rows[rowIndex].charAt(colIndex) || '-';
+        return {
+          isSelected: false,
+          minesAround: 0,
+          hasMine: cellValue === '*',
+          flag: '',
+          exploded: false
+        };
+      })
+    );
+    
+    const numberOfRowsM = mockBoard.length
+    const numberOfColumnsM = mockBoard[0].length
+
+    const isValidsquare = (row, col) =>
+      row >= 0 && row < numberOfRowsM && col >= 0 && col < numberOfColumnsM
+
+    const countAdjacentMines = (row, col) => {
+      let minesCount = 0
+      for (let i = -1; i <= 1; i++) {
+        for (let j = -1; j <= 1; j++) {
+          if (i === 0 && j === 0) continue
+          const newRow = row + i
+          const newCol = col + j
+          if (isValidsquare(newRow, newCol) && mockBoard[newRow][newCol].hasMine) {
+            minesCount++
+          }
+        }
+      }
+      return minesCount
+    }
+
+    mockBoard.forEach((row, rowIndex) => {
+      row.forEach((square, columnIndex) => {
+        if (!square.hasMine) {
+          square.minesAround = countAdjacentMines(rowIndex, columnIndex)
+        }
+      })
+    })
+
+   setBoard(mockBoard);
+  };
+  
+
+  
 
 
   return (
     <>
-    <center>
-    <div className='container'>
-      <h1 className='window'>Minesweeper</h1>
+     <element class="flex justify-center">
+  <element class="w-full max-w-screen-lg mx-auto px-4">
+    <div data-testid='app-container' class='container'>
+      <h1 class='text-2xl md:text-4xl lg:text-5xl font-bold text-center my-4'>Minesweeper</h1>
 
-      <div className='stats'> 
-      <div className='window-stats'>
-        <FlagsCounter flagsLeft={flagsLeft} /> 
-        </div>
-    
+      <div class='flex flex-col md:flex-row justify-center md:justify-between items-center my-4'>
+  <div class='window-stats my-2 md:my-0'>
+    <FlagsCounter flagsLeft={flagsLeft} />
+  </div>
 
-        <div className='window'>
-       
+  <div class='window my-2 md:my-0'>
+    <Smiley newGame={newGame} smileyMoodProp={smileyMoodProp} />
+  </div>
 
- <Smiley
-          newGame={newGame}
-          smileyMoodProp={smileyMoodProp}
-        />
+  <div class='window-stats my-2 md:my-0'>
+    <TimeCounter
+      timePassed={timePassed}
+      setTimePassed={setTimePassed}
+      gameOver={gameOver}
+      gameHasStarted={gameHasStarted}
+    />
+  </div>
+</div>
 
-       
-     
-      </div> 
 
-        <div className='window-stats'>
-        <TimeCounter
-          timePassed={timePassed}
-          setTimePassed={setTimePassed}
-          gameOver={gameOver}
-          gameHasStarted={gameHasStarted}
-        /></div>
-   </div>
-      
-      <main className='board'>
-        <section className='game' style={{ display: 'grid', gridTemplateColumns: `repeat(${numberOfColumns}, 1fr)` }}>
-
+      <main class='board'>
+        <section class='game' data-testid='board' style={{ display: 'grid', gridTemplateColumns: `repeat(${numberOfColumns}, 1fr)` }}>
           {board.map((rowArray, row) => {
             return rowArray.map((square, column) => (
               <Square
@@ -352,20 +406,30 @@ function App() {
                 handleSquareClassName={handleSquareClassName}
                 handleSquareLeftClicked={handleSquareLeftClicked}
                 handleSquareRightClicked={handleSquareRightClicked}
+                dataTestId={`square-${row}-${column}`} 
               />
             ))
           })}
         </section>
-
       </main>
-      <Difficulty
-        setGameDifficulty={setGameDifficulty}
-      />  
-      · Antonio Gordillo 2023 ·
+      
+      <div class="flex flex-col md:flex-row justify-center items-center my-4">
+        <Difficulty setGameDifficulty={setGameDifficulty} />
       </div>
-      </center>
-      </>
-    
+
+      <p class="text-center my-4">· Antonio Gordillo 2023 ·</p>
+      
+      <div class="flex flex-col md:flex-row justify-center items-center my-4">
+        <textarea id='mockInput' data-testid="mockInput" rows="1" cols="1" class="border p-2 mr-2 md:mr-4"></textarea>
+        <button data-testid="submitMockdata" onClick={initializeGameBoard} class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Submit</button>
+      </div>
+    </div>
+  </element>
+</element>
+
+        
+    </>
+
   )
 }
 

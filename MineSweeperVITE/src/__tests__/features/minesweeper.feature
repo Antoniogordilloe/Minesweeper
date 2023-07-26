@@ -38,95 +38,102 @@ Feature: Minesweeper
     "9" Clean cell with 9 adjacent mines
     "@" highlighted mine
     Game example: http://birrell.org/andrew/minesweeper/
+
     Background:
         Given the player opens the game
 
-    @Single
     Scenario: Starting game - All the cells should be hidden
         Then all the cells should be covered
-   
-#    Scenario: Starting game - All the cells should be enabled
-#         Then all the cells should be enabled
-   
-#     Scenario: Uncovering a cell - Disabling the cell
-#         Given the player loads the following mock data:
-#             """
-#             | * | o |
-#             """
-#         When the player uncovers the cell (1,2)
-#         Then the cell (1,2) should be disabled
-    
-#     Scenario: Tagging a "!" tag with the mouse right button
-#         Given the player loads the following mock data:
-#             """
-#             | * | o |
-#             """
-#         When the player clicks the right button on the (1,1) cell
-#         Then the cell should show the "!" tag
-   
-#     Scenario: Tagging a "?" tag with the mouse right button
-#         Given the player loads the following mock data:
-#             """
-#             | * | o |
-#             """
-#         When the player clicks the right button on the (1,1) cell
-#         And the cell should show the "!" tag
-#         And the player clicks the right button on the (1,1) cell
-#         Then the cell should show the "?" tag
-   
-#     Scenario: Removing a "!" tag with the mouse right button
-#         Given the player loads the following mock data:
-#             """
-#             | * | o |
-#             """
-#         When the player tags the (1,1) cell with the "!"
-#         And the player clicks the right button on the (1,1) cell
-#         And the player clicks the right button on the (1,1) cell
-#         Then the cell should show no tag
-   
-#     Scenario: Removing a "?" tag with the mouse right button
-#         Given the player loads the following mock data:
-#             """
-#             | * | o |
-#             """
-#         When the player tags the (1,1) cell with the "?"
-#         And the player clicks the right button on the (1,1) cell
-#         Then the cell should show no tag
-    
-#     Scenario: Removing a "!" tag by uncovering a cell
-#         Given the player loads the following mock data:
-#             """
-#             | * | o |
-#             """
-#         When the player tags (1,2) cell with a "!" tag
-#         And the player uncovers the (1,2) cell
-#         Then the cell should be uncovered
-    
-#     Scenario: Removing a "?" tag by uncovering a cell
-#         Given the player loads the following mock data:
-#             """
-#             | * | o |
-#             """
-#         When the player tags (1,2) cell with a "?" tag
-#         And the player uncovers the (1,2) cell
-#         Then the cell should be uncovered
-    
-#     Scenario: Uncovering a cell - Showing the number of mines around
-#         Given the player loads the following mock data: '<data>'
-#         When the player uncovers the cell (2,2)
-#         Then the cell should show the following number '<number>'
 
-#         Examples:
-#             | data          | number |
-#             | "*oo-ooo-ooo" | 1      |
-#             | "**o-ooo-ooo" | 2      |
-#             | "***-ooo-ooo" | 3      |
-#             | "***-*oo-ooo" | 4      |
-#             | "***-*o*-ooo" | 5      |
-#             | "***-*o*-*oo" | 6      |
-#             | "***-*o*-***" | 7      |
-#             | "***-*o*-***" | 8      |
-    
+    Scenario: Starting game - All the cells should be enabled
+        Then all the cells should be enabled
+
+    Scenario: Uncovering a cell
+        Given the player loads the following mock data:
+            """
+            o
+            """
+        When the player left clicks the cell (0,0)
+        Then the cell should be uncovered (0,0)
+
+    Scenario: Tagging a "⚑" tag with the mouse right button
+        Given the player loads the following mock data:
+            """
+            o
+            """
+        When the player right clicks the cell (0,0)
+        Then the (0,0) cell display should be ('⚑')
+
+    Scenario: Tagging a "?" tag with the mouse right button
+        Given the player loads the following mock data:
+            """
+            o
+            """
+        When the player right clicks the cell (0,0)
+        And the player right clicks the cell (0,0)
+        Then the (0,0) cell display should be ('?')
+    @Single
+    Scenario: Removing a "⚑" tag with the mouse right button
+        Given the player loads the following mock data:
+            """
+            o
+            """
+        When the player tags the (0,0) cell with a ('⚑')
+        And the player right clicks the cell (0,0)
+        And the player right clicks the cell (0,0)
+        Then the (0,0) cell display should be blank
+
+    Scenario: Removing a "?" tag with the mouse right button
+        Given the player loads the following mock data:
+            """
+            o
+            """
+        When the player tags the (0,0) cell with a ('?')
+        And the player right clicks the cell (0,0)
+        Then the (0,0) cell display should be blank
+
+    Scenario: Removing a "⚑" tag by uncovering a cell
+        Given the player loads the following mock data:
+            """
+            o
+            """
+        When the player tags the (0,0) cell with a ('⚑')
+        And the player uncovers the cell (0,0)
+        Then the cell should be uncovered (0,0)
+
+    Scenario: Removing a "?" tag by uncovering a cell
+        Given the player loads the following mock data:
+            """
+            o
+            """
+        When the player tags the (0,0) cell with a ('?')
+        And the player uncovers the cell (0,0)
+        Then the cell should be uncovered (0,0)
+
+    Scenario: Uncovering a cell - Showing the number of mines around Simple
+        Given the player loads the following mock data:
+            """
+            ooo-*oo-ooo
+            """
+        When the player uncovers the cell (1,1)
+        Then the (1,1) cell display should be ('1')
+
+    #  Scenario Outline: Uncovering a cell - Showing the number of mines around
+    #      Given the player loads the following mock data: <data>
+    #       When the player uncovers the cell (2,2)
+    #       Then the (1,2) cell display should show the following number: <number>
+
+    #      Examples:
+    #          | data        | number |
+    #         | *oo-ooo-ooo | 1      |
+    #          | **o-ooo-ooo | 2      |
+    #          | ***-ooo-ooo | 3      |
+    #          | ***-*oo-ooo | 4      |
+    #          | ***-*o*-ooo | 5      |
+    #          | ***-*o*-*oo | 6      |
+    #          | ***-*o*-**o | 7      |
+    #          | ***-*o*-*** | 8      |
+
 #     Scenario: Uncovering a cell - No mines around
 #         Given the player loads the following mock data:
 #             """
@@ -136,7 +143,7 @@ Feature: Minesweeper
 #             """
 #         When the player uncovers the (2,2) cell
 #         Then the cell should show no number
-   
+
 #     Scenario: Uncovering a mine
 #         Given the player loads the following mock data:
 #             """
@@ -144,7 +151,7 @@ Feature: Minesweeper
 #             """
 #         When the player uncovers the cell (1,1)
 #         Then the (1,1) cell should show a "@" mine
-    
+
 #     Scenario: Tagging a mine right with "!" tag
 #         Given the player loads the following mock data:
 #             """
@@ -198,7 +205,7 @@ Feature: Minesweeper
 #             """
 #             | * | o | * |
 #             """
-        
+
 #         And the player tags the (1,1) cell with a "!" tag
 #         When the player uncovers the cell (1,3)
 #         And the player pressed the left mouse button on the (1,1) cell
@@ -417,4 +424,3 @@ Feature: Minesweeper
 #         And the player clicks on the smiley face
 #         Then the smiley face should show the following status: neutral
 
-    
