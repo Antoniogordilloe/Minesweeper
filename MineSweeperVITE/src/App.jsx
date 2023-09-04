@@ -1,6 +1,6 @@
-import React from 'react'
-import './App.css'
-import { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+/* import './App.css' */
+import './index.css'
 
 import Square from './components/Square'
 import Smiley from './components/Smiley'
@@ -13,21 +13,43 @@ let numberOfRows = 10
 let TOTAL_MINES = 10
 let smileyMoodProp = 'smiley'
 
-function App() {
+let gridClass = ''
 
+const RANDOM_IMAGE_PREFIX = 'https://picsum.photos/1920/1080'
+const POEM_BY_ID_PREFIX = 'https://api-thirukkural.vercel.app/api?num='
+
+function App () {
   const [gameHasStarted, setGameHasStarted] = useState(false)
   const [timePassed, setTimePassed] = useState(0)
 
   const [gameOver, setGameOver] = useState((false))
   const [flagsLeft, setFlagsLeft] = useState((10))
   const [board, setBoard] = useState(() => {
+    calculateGridClass()
     const initialBoard = createEmptyBoard()
     const boardWithMines = addRandomMines(initialBoard, TOTAL_MINES)
     const boardwithMinesAround = addCounterOfMinesAround(boardWithMines)
     return boardwithMinesAround
   })
 
-  function setGameDifficulty(level) {
+  function calculateGridClass () {
+    if (numberOfColumns === 10) {
+      gridClass = 'grid grid-cols-10'
+    }
+    if (numberOfColumns === 16) {
+      gridClass = 'grid grid-cols-16'
+    }
+    if (numberOfColumns === 30) {
+      gridClass = 'grid grid-cols-30'
+    }
+    if (numberOfColumns === 50) {
+      gridClass = 'grid grid-cols-50'
+    }
+
+    return gridClass
+  }
+
+  function setGameDifficulty (level) {
     if (level === 'easy') {
       numberOfColumns = 10
       numberOfRows = 10
@@ -49,10 +71,11 @@ function App() {
       TOTAL_MINES = 500
     }
 
+    calculateGridClass()
     newGame()
   }
 
-  function selectAllMines(board) {
+  function selectAllMines (board) {
     const updatedBoard = board.map(row =>
       row.map(square =>
         square.hasMine && square.flag != '⚑' ? { ...square, isSelected: true } : square
@@ -61,7 +84,7 @@ function App() {
     return updatedBoard
   }
 
-  function createEmptyBoard() {
+  function createEmptyBoard () {
     const board = Array(numberOfRows).fill(null).map(() => Array(numberOfColumns).fill({
       isSelected: false,
       minesAround: 0,
@@ -72,7 +95,7 @@ function App() {
     return board
   }
 
-  function addRandomMines(board, TOTAL_MINES) {
+  function addRandomMines (board, TOTAL_MINES) {
     const boardWithMines = board.map(row => row.map(square => ({ ...square })))
     let minesLeft = TOTAL_MINES
 
@@ -88,7 +111,7 @@ function App() {
     return boardWithMines
   }
 
-  function addCounterOfMinesAround(board) {
+  function addCounterOfMinesAround (board) {
     const numberOfRows = board.length
     const numberOfColumns = board[0].length
 
@@ -121,7 +144,11 @@ function App() {
     return board
   }
 
-  function newGame() {
+  function newGame () {
+    setPoemBody('')
+    setPoemTitle('')
+    setPoemVirtue('')
+    setPoemChapter('')
     const initialBoard = createEmptyBoard()
     const boardWithMines = addRandomMines(initialBoard, TOTAL_MINES)
     const boardwithMinesAround = addCounterOfMinesAround(boardWithMines)
@@ -143,12 +170,18 @@ function App() {
 
       setBoard(selectAllMines(updatedBoard))
       setGameOver(true)
+      setPoemBody('')
+      setPoemTitle('')
+      setPoemVirtue('')
+      setImageUrl('https://assets-losspreventionmedia-com.s3.us-east-2.amazonaws.com/2023/03/apocalypse-1280x720-1.jpg')
       markAllWrongFlags(board)
     } else {
+      fetchImageUrl()
+
       updatedBoard[row][column].isSelected = true
       if (updatedBoard[row][column].minesAround === 0) {
         selectAdjacentSquares(row, column, updatedBoard)
-      } 
+      }
       setBoard(updatedBoard)
     }
   }
@@ -172,14 +205,13 @@ function App() {
     setBoard(updatedBoard)
   }
 
-  function handleSquareDisplay(row, column) {
+  function handleSquareDisplay (row, column) {
     const square = board[row][column]
 
     let squareDisplay = ''
     squareDisplay = square.minesAround
 
     if (square.isSelected) {
-      
       if (square.hasMine) {
         squareDisplay = '💣'
       } else if (square.minesAround === 0) { squareDisplay = ' ' }
@@ -190,16 +222,26 @@ function App() {
     return squareDisplay
   }
 
-  function handleSquareClassName(row, column) {
+  function handleSquareClassName (row, column) {
     const square = board[row][column]
 
-    const className = `square ${square.isSelected ? 'is-selected' : ''} 
-    ${square.exploded ? 'has-mine' : ''}`
+    const baseClassName = 'flex justify-center  cursor-pointer box-content bg-blue-500 w-8 h-8 border-2 text-center text-2xl font-bold  hover:bg-yellow-300 '
+    let className = baseClassName
+
+    if (square.isSelected) {
+      /* className = `${baseClassName} bg-white` */
+      className = 'flex justify-center   box-content bg-white w-8 h-8 border-2 text-center text-2xl font-bold '
+    }
+
+    if (square.exploded) {
+      /*  className = `${baseClassName} bg-red-600` */
+      className = 'flex justify-center   box-content bg-red-600 w-8 h-8 border-2 text-center text-2xl font-bold  '
+    }
 
     return className
   }
 
-  function handleSquareLeftClicked(row, column) {
+  function handleSquareLeftClicked (row, column) {
     setGameHasStarted(true)
     const square = board[row][column]
     if (!gameOver && !square.isSelected) {
@@ -215,14 +257,14 @@ function App() {
     checkWin()
   }
 
-  function handleSquareRightClicked(row, column) {
+  function handleSquareRightClicked (row, column) {
     const square = board[row][column]
     if (!gameOver && !square.isSelected) {
       addFlag(row, column)
     }
   }
 
-  function selectAdjacentSquares(row, column, board) {
+  function selectAdjacentSquares (row, column, board) {
     const directions = [
       { row: -1, column: 0 }, // Arriba
       { row: 1, column: 0 }, // Abajo
@@ -254,7 +296,7 @@ function App() {
     })
   }
 
-  function checkWin() {
+  function checkWin () {
     const updatedBoard = [...board]
     let allNonMineSelected = true
 
@@ -275,7 +317,7 @@ function App() {
     }
   }
 
-  function flagAllMines(board) {
+  function flagAllMines (board) {
     const updatedBoard = [...board]
     updatedBoard.map(row =>
       row.map(square => {
@@ -288,7 +330,7 @@ function App() {
     return updatedBoard
   }
 
-  function markAllWrongFlags(board) {
+  function markAllWrongFlags (board) {
     const updatedBoard = [...board]
     updatedBoard.map(row =>
       row.map(square => {
@@ -305,32 +347,31 @@ function App() {
   }
 
   const initializeGameBoard = () => {
-    
     smileyMoodProp = 'neutral'
     setGameOver(false)
     setFlagsLeft(TOTAL_MINES)
     setTimePassed(0)
     setGameHasStarted(false)
 
-    const input = document.getElementById('mockInput').value;
-  
-    const rows = input.split('-');
-    const numRows = rows.length;
-    const numCols = Math.max(...rows.map(row => row.length));
-  
-    let mockBoard = Array.from({ length: numRows }, (_, rowIndex) =>
+    const input = document.getElementById('mockInput').value
+
+    const rows = input.split('-')
+    const numRows = rows.length
+    const numCols = Math.max(...rows.map(row => row.length))
+
+    const mockBoard = Array.from({ length: numRows }, (_, rowIndex) =>
       Array.from({ length: numCols }, (_, colIndex) => {
-        const cellValue = rows[rowIndex].charAt(colIndex) || '-';
+        const cellValue = rows[rowIndex].charAt(colIndex) || '-'
         return {
           isSelected: false,
           minesAround: 0,
           hasMine: cellValue === '*',
           flag: '',
           exploded: false
-        };
+        }
       })
-    );
-    
+    )
+
     const numberOfRowsM = mockBoard.length
     const numberOfColumnsM = mockBoard[0].length
 
@@ -360,74 +401,124 @@ function App() {
       })
     })
 
-   setBoard(mockBoard);
-  };
-  
+    setBoard(mockBoard)
+  }
 
-  
+  /* useEffect(() => {
+      fetch(RANDOM_IMAGE_PREFIX)
+        .then(response => {
+          const { url } = response
+          setImageUrl(url)
+          fetchPoemById(extractIdFromImageUrl(url))
+          console.log(url)
+        })
+    }, []) */
 
+  // API learning
+  const [imageUrl, setImageUrl] = useState()
+  const [poemTitle, setPoemTitle] = useState()
+  const [poemBody, setPoemBody] = useState()
+  const [poemVirtue, setPoemVirtue] = useState()
+  const [poemChapter, setPoemChapter] = useState()
+
+  function fetchImageUrl () {
+    fetch(RANDOM_IMAGE_PREFIX)
+      .then(response => {
+        const { url } = response
+        setImageUrl(url)
+        fetchPoemById(extractIdFromImageUrl(url))
+      })
+  }
+
+  function fetchPoemById (id) {
+    fetch(`${POEM_BY_ID_PREFIX}${id}`)
+      .then(response => response.json())
+      .then(poem => {
+        setPoemChapter(poem.chap_eng)
+        setPoemTitle(poem.eng)
+        setPoemBody(poem.eng_exp)
+        setPoemVirtue(poem.sect_eng)
+      })
+      .catch(error => {
+        console.error('ERROR, couldnt fetch poem:', error)
+      })
+  }
+
+  function extractIdFromImageUrl (url) {
+    const regex = /id\/(\d+)\//
+    const match = url.match(regex)
+
+    if (match && match[1]) {
+      return parseInt(match[1], 10)
+    } else {
+      return null
+    }
+  }
 
   return (
+
     <>
-     <element class="flex justify-center">
-  <element class="w-full max-w-screen-lg mx-auto px-4">
-    <div data-testid='app-container' class='container'>
-      <h1 class='text-2xl md:text-4xl lg:text-5xl font-bold text-center my-4'>Minesweeper</h1>
+      <div className='bg-black'>
 
-      <div class='flex flex-col md:flex-row justify-center md:justify-between items-center my-4'>
-  <div class='window-stats my-2 md:my-0'>
-    <FlagsCounter flagsLeft={flagsLeft} />
-  </div>
+        <div className='h-screen flex items-center container mx-auto justify-center bg-cover  bg-center ' style={{ backgroundImage: `url(${imageUrl})` }}>
 
-  <div class='window my-2 md:my-0'>
-    <Smiley newGame={newGame} smileyMoodProp={smileyMoodProp} />
-  </div>
+          <p className='mb-4 max-w-[100px] text-justify mx-2 p-1 overline bg-white'>{poemTitle}<p className='text-center'>☾</p></p>
 
-  <div class='window-stats my-2 md:my-0'>
-    <TimeCounter
-      timePassed={timePassed}
-      setTimePassed={setTimePassed}
-      gameOver={gameOver}
-      gameHasStarted={gameHasStarted}
-    />
-  </div>
-</div>
+          <div>
 
+            <div className='flex items-center justify-center'>
 
-      <main class='board'>
-        <section class='game' data-testid='board' style={{ display: 'grid', gridTemplateColumns: `repeat(${numberOfColumns}, 1fr)` }}>
-          {board.map((rowArray, row) => {
-            return rowArray.map((square, column) => (
-              <Square
-                key={`${row}-${column}`}
-                row={row}
-                column={column}
-                handleSquareDisplay={handleSquareDisplay}
-                handleSquareClassName={handleSquareClassName}
-                handleSquareLeftClicked={handleSquareLeftClicked}
-                handleSquareRightClicked={handleSquareRightClicked}
-                dataTestId={`square-${row}-${column}`} 
-              />
-            ))
-          })}
-        </section>
-      </main>
-      
-      <div class="flex flex-col md:flex-row justify-center items-center my-4">
-        <Difficulty setGameDifficulty={setGameDifficulty} />
+              <div data-testid='app-container' className=' grid grid-cols-3  '>
+
+                <TimeCounter
+                  timePassed={timePassed}
+                  setTimePassed={setTimePassed}
+                  gameOver={gameOver}
+                  gameHasStarted={gameHasStarted}
+                />
+                <Smiley newGame={newGame} smileyMoodProp={smileyMoodProp} />
+                <FlagsCounter flagsLeft={flagsLeft} />
+
+              </div>
+            </div>
+            <h1 className='flex justify-center text-xl bg-white'>🎕{poemChapter}🎕</h1>
+            <h1 className='flex justify-center  bg-white'>{poemVirtue}</h1>
+
+            <section className={gridClass} data-testid='board'>
+              {board.map((rowArray, row) => {
+                return rowArray.map((square, column) => (
+                  <Square
+                    key={`${row}-${column}`}
+                    row={row}
+                    column={column}
+                    handleSquareDisplay={handleSquareDisplay}
+                    handleSquareClassName={handleSquareClassName}
+                    handleSquareLeftClicked={handleSquareLeftClicked}
+                    handleSquareRightClicked={handleSquareRightClicked}
+                    dataTestId={`square-${row}-${column}`}
+                  />
+                ))
+              })}
+            </section>
+            <p className='flex justify-center bg-white'>· Antonio Gordillo 2023 ·</p>
+            <div className='flex justify-center'>
+              <Difficulty setGameDifficulty={setGameDifficulty} />
+
+            </div>
+
+            <div>
+
+              {/*  <textarea id='mockInput' data-testid="mockInput"></textarea>
+<button data-testid="submitMockdata" onClick={initializeGameBoard} className="font-bold py-2 px-4 rounded">Submit</button> */}
+
+            </div>
+
+          </div>
+
+          <p className='mb-4 max-w-[100px] text-justify mx-2 p-1 overline bg-white '>{poemBody}<p className='text-center'>☼</p></p>
+
+        </div>
       </div>
-
-      <p class="text-center my-4">· Antonio Gordillo 2023 ·</p>
-      
-      <div class="flex flex-col md:flex-row justify-center items-center my-4">
-        <textarea id='mockInput' data-testid="mockInput" rows="1" cols="1" class="border p-2 mr-2 md:mr-4"></textarea>
-        <button data-testid="submitMockdata" onClick={initializeGameBoard} class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Submit</button>
-      </div>
-    </div>
-  </element>
-</element>
-
-        
     </>
 
   )

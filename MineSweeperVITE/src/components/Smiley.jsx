@@ -1,26 +1,25 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import smiley from './smiley.png'
 import happySmiley from './happySmiley.png'
 import sadSmiley from './sadSmiley.png'
-import { useState,useEffect } from 'react'
- 
+
 const Smiley = ({ smileyMoodProp, newGame }) => {
-  const [smileyMood, setSmileyMood] = useState(':|');
+  const [smileyMood, setSmileyMood] = useState('😐')
 
   useEffect(() => {
     if (smileyMoodProp === 'happy') {
-      setSmileyMood(':)');
+      setSmileyMood('😁')
     } else if (smileyMoodProp === 'sad') {
-      setSmileyMood(':(');
+      setSmileyMood('💀')
     } else if (smileyMoodProp === 'neutral') {
-      setSmileyMood(':|');
+      setSmileyMood('😐')
     }
-  }, [smileyMoodProp]); 
+  }, [smileyMoodProp])
 
   return (
-    <div className='smiley' onClick={() => newGame()}>
+    <div className='flex justify-center text-5xl bg-white text-white font-bold py-2 px-4 cursor-pointer hover:bg-yellow-300 ' onClick={() => newGame()}>
       <div alt='Smiley'>{smileyMood} </div>
     </div>
-  );
-};
+  )
+}
 export default Smiley
